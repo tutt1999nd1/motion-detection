@@ -13,20 +13,33 @@ import datetime
 import imutils
 import time
 import cv2
+import redis
+import xml.etree.ElementTree as ET
 
 # initialize the output frame and a lock used to ensure thread-safe
 # exchanges of the output frames (useful for multiple browsers/tabs
 # are viewing tthe stream)
+
+env = 'camera'
 outputFrame = None
 lock = threading.Lock()
 
+client = redis.Redis(host='localhost', port=6379, db=0)
+
 # initialize a flask object
 app = Flask(__name__)
+udp = 'udp://127.0.0.1:5005'
+
+send_data = {
+	"link_udp": udp,
+    "rect_list": [],
+    "time": ''
+}
 
 # initialize the video stream and allow the camera sensor to
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src='rtsp://ytexinman.ddns.net:554/av0_0').start()
+vs = VideoStream(src=udp).start()
 time.sleep(2.0)
 
 @app.route("/")
@@ -43,6 +56,7 @@ def detect_motion(frameCount):
 	# read thus far
 	md = SingleMotionDetector(accumWeight=0.1)
 	total = 0
+	file = 0
 
 	# loop over frames from the video stream
 	while True:
@@ -62,6 +76,9 @@ def detect_motion(frameCount):
 		# if the total number of frames has reached a sufficient
 		# number to construct a reasonable background model, then
 		# continue to process the frame
+		rect_list = []
+		data = ET.Element('data')
+		items = ET.SubElement(data, 'items')
 		if total > frameCount:
 			# detect motion in the image
 			motion = md.detect(gray)
@@ -73,7 +90,47 @@ def detect_motion(frameCount):
 				(thresh, (minX, minY, maxX, maxY)) = motion
 				cv2.rectangle(frame, (minX, minY), (maxX, maxY),
 					(0, 0, 255), 2)
-		
+				file = file + 1
+				item = ET.SubElement(items, 'item')
+				item.set('name', 'item')
+				point1 = ET.SubElement(item, "point")
+				point2 = ET.SubElement(item, "point")
+
+				# point 1
+				point1.set('name', 'point1')
+				x1 = ET.SubElement(point1, 'x')
+				y1 = ET.SubElement(point1, 'y')
+				x1.text = str(minX)
+				y1.text = str(minY)
+
+				# point 2
+				point2.set('name', 'point2')
+				x2 = ET.SubElement(point2, 'x')
+				y2 = ET.SubElement(point2, 'y')
+				x2.text = str(maxX)
+				y2.text = str(maxY)
+
+				mydata = ET.tostring(data).decode('utf-8')
+				# now = datetime.now()
+				# dt_string = now.strftime("%d/%m/%Y%H:%M:%S.xml")
+				myfile = open('xml/' + str(file) + '.xml', "w")
+				myfile.write(mydata)
+
+				item = {
+					"point1": {
+						"x": minX,
+						"y": minY
+					},
+					"point2": {
+						"x": maxX,
+						"y": maxY
+					}
+				}
+				rect_list.append(item)
+				send_data['rect_list'] = rect_list
+				client.publish(env, str(send_data))
+				cv2.imwrite('images/' + str(file) + '.jpg', frame)
+
 		# update the background model and increment the total number
 		# of frames read thus far
 		md.update(gray)
@@ -103,6 +160,7 @@ def generate():
 			# ensure the frame was successfully encoded
 			if not flag:
 				continue
+				
 
 		# yield the output frame in the byte format
 		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
