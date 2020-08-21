@@ -3,6 +3,8 @@
 
 # import the necessary packages
 from util.motion_detection import SingleMotionDetector
+from util.redis import RedisPublish
+from util.kafka import KafkaProduce
 from imutils.video import VideoStream
 from flask import Response
 from flask import Flask
@@ -12,7 +14,6 @@ import argparse
 import imutils
 import time
 import cv2
-import redis
 import xml.etree.ElementTree as ET
 from kafka import KafkaProducer
 import json
@@ -27,7 +28,7 @@ topic = 'numtest'
 outputFrame = None
 lock = threading.Lock()
 
-client = redis.Redis(host='localhost', port=6379, db=0)
+client = RedisPublish(env)
 
 # initialize a flask object
 app = Flask(__name__)
@@ -39,9 +40,7 @@ send_data = {
     "time": ''
 }
 
-producer = KafkaProducer(
-    bootstrap_servers='localhost:9092',
-    value_serializer=lambda v: json.dumps(v).encode('utf-8'))
+producer = KafkaProduce(topic)
 
 # initialize the video stream and allow the camera sensor to
 # warmup
@@ -112,11 +111,12 @@ def detect_motion(frameCount):
 				}
 				rect_list.append(item)
 				send_data['rect_list'] = rect_list
-				client.publish(env, str(send_data))
-				producer.send(topic, value=send_data)
+				client.publish(str(send_data))
+				producer.producer(str(send_data))
 				if start_time == '':
 					start_time = datetime.now()
-					client.publish(env, 'Start_time:' + str(start_time))
+					client.publish('Start_time:' + str(start_time))
+					# client.publish(env, 'Start_time:' + str(start_time))
 					data = ET.Element('data')
 					items = ET.SubElement(data, 'items')
 					file = file + 1
@@ -153,7 +153,7 @@ def detect_motion(frameCount):
 						t = datetime.now() - start_time
 						end_time = decimal.Decimal(t.seconds)
 					else:
-						client.publish(env, 'End time:' + str(datetime.now()))
+						client.publish('End time:' + str(datetime.now()))
 						end_time = 0
 						start_time = ''
 				else:
