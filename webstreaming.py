@@ -3,8 +3,8 @@
 
 # import the necessary packages
 from util.motion_detection import SingleMotionDetector
-from util.redis import RedisPublish
-from util.kafka import KafkaProduce
+#from util.redis import RedisPublish
+#from util.kafka import KafkaProduce
 from util.images import WriteImage
 from util.xml import WriteXml
 
@@ -29,7 +29,7 @@ topic = 'numtest'
 outputFrame = None
 lock = threading.Lock()
 
-client = RedisPublish(env)
+#client = RedisPublish(env)
 
 # initialize a flask object
 app = Flask(__name__)
@@ -41,12 +41,13 @@ send_data = {
     "time": ''
 }
 
-producer = KafkaProduce(topic)
+#producer = KafkaProduce(topic)
 
 # initialize the video stream and allow the camera sensor to
 # warmup
-#vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=udp).start()
+#vs = cv2.VideoCapture("./videos/example_01.mp4")
+vs = cv2.VideoCapture("rtsp://admin:admin123@10.61.185.201:554/cam/realmonitor?channel=1&subtype=0")
+#vs = VideoStream(src=udp).start()
 time.sleep(2.0)
 
 start_time = ''
@@ -72,7 +73,9 @@ def detect_motion(frameCount):
 	while True:
 		# read the next frame from the video stream, resize it,
 		# convert the frame to grayscale, and blur it
-		frame = vs.read()
+		ret, frame = vs.read()
+		if frame is None:
+			break
 		frame = imutils.resize(frame, width=400)
 		gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		gray = cv2.GaussianBlur(gray, (7, 7), 0)
@@ -112,11 +115,11 @@ def detect_motion(frameCount):
 				}
 				rect_list.append(item)
 				send_data['rect_list'] = rect_list
-				client.publish(str(send_data))
-				producer.producer(str(send_data))
+				#client.publish(str(send_data))
+				#producer.producer(str(send_data))
 				if start_time == '':
 					start_time = datetime.now()
-					client.publish('Start_time:' + str(start_time))
+					#client.publish('Start_time:' + str(start_time))
 					# # client.publish(env, 'Start_time:' + str(start_time))
 					# data = ET.Element('data')
 					# items = ET.SubElement(data, 'items')
@@ -160,7 +163,7 @@ def detect_motion(frameCount):
 						t = datetime.now() - start_time
 						end_time = decimal.Decimal(t.seconds)
 					else:
-						client.publish('End time:' + str(datetime.now()))
+						#client.publish('End time:' + str(datetime.now()))
 						end_time = 0
 						start_time = ''
 				else:
@@ -232,4 +235,4 @@ if __name__ == '__main__':
 		threaded=True, use_reloader=False)
 
 # release the video stream pointer
-vs.stop()
+vs.release()
