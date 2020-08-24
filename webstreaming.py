@@ -5,6 +5,9 @@
 from util.motion_detection import SingleMotionDetector
 from util.redis import RedisPublish
 from util.kafka import KafkaProduce
+from util.images import WriteImage
+from util.xml import WriteXml
+
 from imutils.video import VideoStream
 from flask import Response
 from flask import Flask
@@ -15,8 +18,6 @@ import imutils
 import time
 import cv2
 import xml.etree.ElementTree as ET
-from kafka import KafkaProducer
-import json
 from datetime import datetime, timedelta
 import decimal
 # initialize the output frame and a lock used to ensure thread-safe
@@ -116,36 +117,42 @@ def detect_motion(frameCount):
 				if start_time == '':
 					start_time = datetime.now()
 					client.publish('Start_time:' + str(start_time))
-					# client.publish(env, 'Start_time:' + str(start_time))
-					data = ET.Element('data')
-					items = ET.SubElement(data, 'items')
+					# # client.publish(env, 'Start_time:' + str(start_time))
+					# data = ET.Element('data')
+					# items = ET.SubElement(data, 'items')
+					# file = file + 1
+					# item = ET.SubElement(items, 'item')
+					# item.set('name', 'item')
+					# point1 = ET.SubElement(item, "point")
+					# point2 = ET.SubElement(item, "point")
+					#
+					# # point 1
+					# point1.set('name', 'point1')
+					# x1 = ET.SubElement(point1, 'x')
+					# y1 = ET.SubElement(point1, 'y')
+					# x1.text = str(minX)
+					# y1.text = str(minY)
+					#
+					# # point 2
+					# point2.set('name', 'point2')
+					# x2 = ET.SubElement(point2, 'x')
+					# y2 = ET.SubElement(point2, 'y')
+					# x2.text = str(maxX)
+					# y2.text = str(maxY)
+					#
+					# mydata = ET.tostring(data).decode('utf-8')
+					# # now = datetime.now()
+					# # dt_string = now.strftime("%d/%m/%Y%H:%M:%S.xml")
+					#
+					# myfile = open('xml/' + str(file) + '.xml', "w")
+					# myfile.write(mydata)
 					file = file + 1
-					item = ET.SubElement(items, 'item')
-					item.set('name', 'item')
-					point1 = ET.SubElement(item, "point")
-					point2 = ET.SubElement(item, "point")
 
-					# point 1
-					point1.set('name', 'point1')
-					x1 = ET.SubElement(point1, 'x')
-					y1 = ET.SubElement(point1, 'y')
-					x1.text = str(minX)
-					y1.text = str(minY)
+					xml = WriteXml(file)
+					xml.create_object(minX, minY, maxX, maxY)
 
-					# point 2
-					point2.set('name', 'point2')
-					x2 = ET.SubElement(point2, 'x')
-					y2 = ET.SubElement(point2, 'y')
-					x2.text = str(maxX)
-					y2.text = str(maxY)
-
-					mydata = ET.tostring(data).decode('utf-8')
-					# now = datetime.now()
-					# dt_string = now.strftime("%d/%m/%Y%H:%M:%S.xml")
-
-					myfile = open('xml/' + str(file) + '.xml', "w")
-					myfile.write(mydata)
-					cv2.imwrite('images/' + str(file) + '.jpg', frame)
+					t = WriteImage(file, frame)
+					t.write_image()
 
 			if start_time != '':
 				if motion is None:
