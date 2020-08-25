@@ -45,13 +45,22 @@ class SingleMotionDetector:
 			return None
 
 		# otherwise, loop over the contours
+		rect = []
 		for c in cnts:
 			# compute the bounding box of the contour and use it to
 			# update the minimum and maximum bounding box regions
+			if cv2.contourArea(c) < 1000:
+				continue
 			(x, y, w, h) = cv2.boundingRect(c)
 			(minX, minY) = (min(minX, x), min(minY, y))
 			(maxX, maxY) = (max(maxX, x + w), max(maxY, y + h))
+			rect.append({
+				'x': x,
+				'y': y,
+				'w': w,
+				'h': h
+			})
 
 		# otherwise, return a tuple of the thresholded image along
 		# with bounding box
-		return (thresh, (minX, minY, maxX, maxY))
+		return (thresh, rect)
