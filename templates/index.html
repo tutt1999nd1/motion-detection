@@ -4,9 +4,8 @@
   </head>
   <body>
     <h1>DEMO RTSP</h1>
-    <img src="{{ url_for('video_feed') }}">
-    <img src="{{ url_for('video_feed') }}">
-    <img src="{{ url_for('video_feed') }}">
-
+    <img src="{{ url_for('video_feed', id='0') }}">
+    <img src="{{ url_for('video_feed', id='1') }}">
+    <img src="{{ url_for('video_feed', id='2') }}">
   </body>
 </html>

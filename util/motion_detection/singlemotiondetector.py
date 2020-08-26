@@ -49,7 +49,7 @@ class SingleMotionDetector:
 		for c in cnts:
 			# compute the bounding box of the contour and use it to
 			# update the minimum and maximum bounding box regions
-			if cv2.contourArea(c) < 1000:
+			if cv2.contourArea(c) < 700:
 				continue
 			(x, y, w, h) = cv2.boundingRect(c)
 			(minX, minY) = (min(minX, x), min(minY, y))
