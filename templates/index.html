@@ -1,11 +1,33 @@
+<!DOCTYPE HTML>
 <html>
   <head>
-    <title>DEMO</title>
+    <title>Webcam over WebSocket using OpenCV and Tornado</title>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      $(document).ready(function(){
+         if ("WebSocket" in window) {
+            var ws_path = 'ws://' + window.location.host + window.location.pathname + '1';
+            //alert(ws_path);
+            var ws = new WebSocket (ws_path);
+            //alert(ws);
+            ws.onopen = function () {
+               ws.send(1);
+            };
+            ws.onmessage = function (msg) {
+               $("#cam").attr('src', 'data:image/jpg;base64,' + msg.data);
+               ws.send(1);
+            };
+            ws.onerror = function (e) {
+               console.log(e);
+               ws.send(1);
+            };
+         } else {
+             alert("WebSocket not supported");
+         }
+      });
+    </script>
   </head>
   <body>
-    <h1>DEMO RTSP</h1>
-    <img src="{{ url_for('video_feed', id='0') }}">
-    <img src="{{ url_for('video_feed', id='1') }}">
-    <img src="{{ url_for('video_feed', id='2') }}">
+    <img id="cam" src=""/>
   </body>
-</html>
+</html> 
