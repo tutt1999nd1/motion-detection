@@ -208,6 +208,10 @@ from util.motion_detection import SingleMotionDetector
 
 width = None if len(sys.argv) <= 1 else int(sys.argv[1])
 height = None if len(sys.argv) <= 2 else int(sys.argv[2])
+region = [
+    [(300, 300), (500, 450), (1000, 399), (222, 300)],
+    [(700, 300), (340, 450), (100, 399), (222, 300)]
+]
 pts = [(300, 300), (500, 450), (1000, 399), (222, 300)]
 
 # Create video capture object, retrying until successful.
@@ -235,7 +239,7 @@ if height: cap.set(4, height)
 # Monitor the framerate at 1s, 5s, 10s intervals.
 fps = coils.RateTicker((1, 5, 10))
 
-md = SingleMotionDetector(pts)
+md = SingleMotionDetector(region)
 total = 0
 while True:
     hello, frame = cap.read()

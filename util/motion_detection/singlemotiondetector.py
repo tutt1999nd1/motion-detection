@@ -7,10 +7,10 @@ from shapely.geometry.polygon import Polygon
 
 
 class SingleMotionDetector:
-	def __init__(self, pts, accumWeight=0.5):
+	def __init__(self, region, accumWeight=0.5):
 		# store the accumulated weight factor
 		self.accumWeight = accumWeight
-		self.pts = pts
+		self.region = region
 
 		# initialize the background model
 		self.bg = None
@@ -61,9 +61,11 @@ class SingleMotionDetector:
 			mid_point_x = (x + x + w)/2
 			mid_point_y = (y + y + h)/2
 			point = Point(mid_point_x, mid_point_y)
-			polygon = Polygon(self.pts)
-			if polygon.contains(point):
-				continue
+
+			for pts in self.region:
+				polygon = Polygon(pts)
+				if polygon.contains(point):
+					continue
 			rect.append({
 				'x': x,
 				'y': y,
