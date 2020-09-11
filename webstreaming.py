@@ -11,6 +11,7 @@ import imutils
 from util.motion_detection import SingleMotionDetector
 import socketio
 import sys
+import base64
 
 
 channel_id = 'id1234'
@@ -31,14 +32,14 @@ pts = [(300, 300), (500, 450), (1000, 399), (222, 300)]
 max_sleep = 5.0
 cur_sleep = 0.1
 
+# @sio.on('connect', namespace='/motion')
+# def on_connect():
+#     sio.emit('my message', channel_id, namespace='/motion')
+
 
 @sio.on('connect', namespace='/motion')
 def on_connect():
     sio.emit('my message', channel_id, namespace='/motion')
-
-
-@sio.on('connect', namespace='/motion/' + channel_id)
-def on_connect():
     while True:
         cap = cv2.VideoCapture(rtsp)
         if cap.isOpened():
@@ -139,4 +140,5 @@ def on_connect():
 
         hello, frame = cv2.imencode('.jpg', frame)
         value = np.array(frame).tobytes()
-        sio.emit('my message', value, namespace='/motion/' + channel_id)
+        image = base64.b64encode(value)
+        sio.emit(channel_id, image, namespace='/motion')

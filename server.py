@@ -1,7 +1,7 @@
 from aiohttp import web
 import socketio
 
-#https://python-socketio.readthedocs.io/en/latest/server.html
+# https://python-socketio.readthedocs.io/en/latest/server.html
 sio = socketio.AsyncServer()
 app = web.Application()
 sio.attach(app)
@@ -9,21 +9,19 @@ sio.attach(app)
 
 @sio.on('connect', namespace='/motion')
 def connect(sid, environ):
-    print("connect 1", sid)
+    print("connect ", sid)
 
 
 @sio.on('my message', namespace='/motion')
 async def message(sid, data):
-    #await sio.emit('reply', room=sid)
-
-    @sio.on('connect', namespace='/motion/' + data)
-    def connect(sid, environ):
-        print("connect 2", sid)
-
-    @sio.on('my message', namespace='/motion/' + data)
-    def message(sid, message):
-        print(message)
-        sio.emit('reply', message, namespace='/motion/' + data)
+    print("message ", data)
+    # await sio.emit('reply', room=sid)
+    await sio.emit('reply', data, namespace='/motion')
+    @sio.on(data, namespace='/motion')
+    async def message(sid, message):
+        await sio.emit(data, message, namespace='/motion')
+    session = await sio.get_session(sid)
+    print('message from ', session['username'])
 
 
 @sio.on('disconnect', namespace='/motion')
@@ -33,11 +31,11 @@ def disconnect(sid):
 
 @sio.event
 async def connect(sid, environ):
-    #username = authenticate_user(environ)
+    # username = authenticate_user(environ)
     username = 'ok'
     await sio.save_session(sid, {'username': username})
 
 
 if __name__ == '__main__':
-    #web.run_app(app)
+    # web.run_app(app)
     web.run_app(app, host='0.0.0.0', port=9090)
