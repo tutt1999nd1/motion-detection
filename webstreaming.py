@@ -2,10 +2,10 @@ import os
 import sys
 import time
 
-import coils
+#import coils
 import cv2
 import numpy as np
-import redis
+#import redis
 from datetime import datetime
 import imutils
 from util.motion_detection import SingleMotionDetector
@@ -53,14 +53,14 @@ def on_connect():
         cur_sleep = 0.1
 
     # Create client to the Redis store.
-    store = redis.Redis()
+    #store = redis.Redis()
 
     # Set video dimensions, if given.
     if width: cap.set(3, width)
     if height: cap.set(4, height)
 
     # Monitor the framerate at 1s, 5s, 10s intervals.
-    fps = coils.RateTicker((1, 5, 10))
+    #fps = coils.RateTicker((1, 5, 10))
 
     md = SingleMotionDetector(region)
     total = 0
@@ -140,5 +140,5 @@ def on_connect():
 
         hello, frame = cv2.imencode('.jpg', frame)
         value = np.array(frame).tobytes()
-        image = base64.b64encode(value)
+        image = base64.b64encode(value).decode()
         sio.emit(channel_id, image, namespace='/motion')

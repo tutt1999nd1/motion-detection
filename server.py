@@ -19,6 +19,10 @@ async def message(sid, data):
     await sio.emit('reply', data, namespace='/motion')
     @sio.on(data, namespace='/motion')
     async def message(sid, message):
+        print(message)
+        print('-------------------')
+        print(data)
+        print("++++++++++++++++++++")
         await sio.emit(data, message, namespace='/motion')
     session = await sio.get_session(sid)
     print('message from ', session['username'])
