@@ -4,20 +4,17 @@
       <title>Hello world</title>
    </head>
    <body>
-   <canvas id="myCanvas" width="500" height="200"></canvas>
+   <img id="myImg" width="500" height="200"></img>
 
    </body>
    <script src = "/socket.io/socket.io.js"></script>
    
    <script>
-	  var ctx = document.getElementById('myCanvas').getContext('2d');
+	  var img = document.getElementById('myImg');
       var socket = io('/my-namespace');
       socket.on('hi',function(data) {
 		console.log(data);
-		var img = new Image();
 		img.src = 'data:image/jpeg;base64,' + data;
-		console.log(img);
-		ctx.drawImage(img, 0, 0);
       });
    </script>
    <body></body>

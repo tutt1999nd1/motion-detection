@@ -10,6 +10,10 @@ nsp.on('connection', function(socket) {
     nsp.emit('hi', msg);
 	});
 });
+nsp.on('hi',function(data){
+	console.log(data);
+	console.log('------------------------------------');
+});
 
 
 

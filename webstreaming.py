@@ -6,13 +6,15 @@ import time
 import cv2
 import numpy as np
 #import redis
-from datetime import datetime
+#from datetime import datetime
 import imutils
 from util.motion_detection import SingleMotionDetector
 import socketio
 import sys
 import base64
 
+
+program, environment = sys.argv
 
 channel_id = 'id1234'
 rtsp = 'rtsp://ubndxinman.ddns.net:560/av0_0'
@@ -74,9 +76,8 @@ def on_connect():
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
 
         # grab the current timestamp and draw it on the frame
-        timestamp = datetime.now()
-        cv2.putText(frame, timestamp.strftime(
-            "%A %d %B %Y %I:%M:%S%p"), (10, frame.shape[0] - 10),
+        #timestamp = datetime.now()
+        cv2.putText(frame, time.asctime(time.localtime(time.time())), (10, frame.shape[0] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
         # if the total number of frames has reached a sufficient
