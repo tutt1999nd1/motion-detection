@@ -8,54 +8,50 @@ import os
 import signal
 
 
-program, environment = sys.argv
+r = redis.Redis(host="10.60.110.163", port=6379)
 
-r = redis.Redis()
-r.mset({"Croatia": "Zagreb", "Bahamas": "Nassau"})
-print(r.get("Bahamas"))
-print(r.hgetall("myhash"))
-print(r.keys())
-restaurant_484272 = {
-    "name": "Ravagh",
-    "type": "Persian",
-    "address": {
-        "street": {
-            "line1": "11 E 30th St",
-            "line2": "APT 1",
-        },
-        "city": "New York",
-        "state": "NY",
-        "zip": 10016,
-    },
-    "cars":[
-        {"model": "BMW 230", "mpg": 27.5},
-        {"model": "Ford Edge", "mpg": 24.1}
-    ]
-}
-r.set(484272, json.dumps(restaurant_484272))
-#print(json.loads(r.get(484272)))
-check = json.loads(r.get(484272))
-#print(check["address"]["street"]["line1"])
-print(check["cars"])
-cars = check["cars"]
-for x in cars:
-    print(x["model"])
-#hello world
+# print(r.smembers('cameras'))
+# cameras = r.smembers('cameras')
+# for camera in cameras:
+#     print(r.hgetall(camera))
+#
+# print(r.hgetall(49509))
+# print(r.hget(49509, 'camera_config'))
+# print(r.smembers('channels_49509'))
+# print(r.hgetall('110000000006xyz96619'))
+# print(r.hget('110000000006xyz96619', 'channel_config'))
+# check = json.loads(r.hget('110000000006xyz96619', 'channel_config'))
+# print(check['ffmpeg_opt']['src'])
+# print(json.loads(r.hgetall('110000000006xyz96619')))
+
+
+
 p = r.pubsub()
-p.subscribe(environment)   
+p.subscribe('cameras')
 while True:
-    message = p.get_message()
-    if message and not message['data'] == 1:
-        message = message['data'].decode('utf-8')
-        if message == 'run_script':
+    camera_id = p.get_message()
+    if camera_id and not camera_id['data'] == 1:
+        camera_id = camera_id['data'].decode('utf-8')
+        if camera_id == 'run_script':
             print('script running in the targeted machine')
         else :
-            print(json.loads(message))
-            cmd = 'python ./motion-detection/webstreaming.py ' + json.loads(message)['channel_id'] + ' ' + json.loads(message)['rtsp']
-            process = subprocess.Popen(cmd)
-            print("pid--->",process.pid)
-            print("signal--->",signal.SIGINT)
-            #print(subprocess.Popen(cmd, shell=True))
+            channels_camera_id = r.hget(camera_id, 'channels_camera_id')
+            channels_camera = r.smembers(channels_camera_id)
+            pick_channel = ''
+            for channel in channels_camera:
+                pick_channel = channel
+                continue
+            channel_config = json.loads(r.hget(pick_channel, 'channel_config'))
+            motion_config = ''
+            motion_config = r.hget(camera_id, 'motion_config')
+            src = channel_config['ffmpeg_opt']['src']
+            cmd = 'python ../webstreaming.py ' + str(src) + ' ' + str(motion_config)
+            print("cmd---->", cmd)
+            # cmd = 'python ./my_file.py ' + str(camera_id) + ' ' + str(src)
+            #process = subprocess.Popen(cmd)
+            #print("pid--->",process.pid)
+            #print("signal--->",signal.SIGINT)
+            print(subprocess.Popen(cmd, shell=True))
             #time.sleep(20)
             #os.kill(process.pid, signal.SIGINT)
             #print("delete")

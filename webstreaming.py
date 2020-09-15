@@ -12,23 +12,41 @@ from util.motion_detection import SingleMotionDetector
 import socketio
 import sys
 import base64
+import ast
 
+if len(sys.argv) == 3:
+    progam, src, motion_config = sys.argv
 
-program, environment = sys.argv
+else:
+    print('You must to give a camera_id, src and motion_config')
+
 
 channel_id = 'id1234'
+# rtsp = src
 rtsp = 'rtsp://ubndxinman.ddns.net:560/av0_0'
+
 
 sio = socketio.Client()
 sio.connect('http://localhost:9090', namespaces=['/motion'])
 
 width = None if len(sys.argv) <= 1 else int(sys.argv[1])
 height = None if len(sys.argv) <= 2 else int(sys.argv[2])
-region = [
-    [(300, 300), (500, 450), (1000, 399), (222, 300)],
-    [(700, 300), (340, 450), (100, 399), (222, 300)]
-]
-pts = [(300, 300), (500, 450), (1000, 399), (222, 300)]
+# region = [
+#     [(300, 300), (500, 450), (1000, 399), (222, 300)],
+#     [(700, 300), (340, 450), (100, 399), (222, 300)]
+# ]
+# pts = [(300, 300), (500, 450), (1000, 399), (222, 300)]
+region = "[[{'x':160,'y':66}, {'x':104, 'y':146}, {'x':194, 'y':146}, {'x':234, 'y':63}],[{'x':273, 'y':121}, {'x':249, 'y':181}, {'x':299, 'y': 176}, {'x':322, 'y':143}]]"
+retangles = ast.literal_eval(region)
+pts = []
+# region = [
+#     [(300, 300), (500, 450), (1000, 399), (222, 300)],
+#     [(700, 300), (340, 450), (100, 399), (222, 300)]
+# ]
+for i in range(len(retangles)):
+    pts.append([])
+    for point in retangles[i]:
+        pts[i].append((point['x'], point['y']))
 
 # Create video capture object, retrying until successful.
 max_sleep = 5.0
@@ -41,12 +59,17 @@ cur_sleep = 0.1
 
 @sio.on('connect', namespace='/motion')
 def on_connect():
+    print('channel_id---->',channel_id)
     sio.emit('my message', channel_id, namespace='/motion')
     while True:
         cap = cv2.VideoCapture(rtsp)
         if cap.isOpened():
             break
-        print('not opened, sleeping {}s'.format(cur_sleep))
+        print("rtsp---->", rtsp)
+        print("cap---->", cap)
+        print("cur_sleep---->", cur_sleep)
+        print("max_sleep----->", max_sleep)
+	    # print('not opened, sleeping {}s'.format(cur_sleep))
         time.sleep(cur_sleep)
         if cur_sleep < max_sleep:
             cur_sleep *= 2
@@ -60,14 +83,18 @@ def on_connect():
     # Set video dimensions, if given.
     if width: cap.set(3, width)
     if height: cap.set(4, height)
+    print("cap---->", cap)
 
     # Monitor the framerate at 1s, 5s, 10s intervals.
     #fps = coils.RateTicker((1, 5, 10))
 
-    md = SingleMotionDetector(region)
+    md = SingleMotionDetector(pts)
+    print("md---->", md)
+
     total = 0
     while True:
         hello, frame = cap.read()
+        print("frame---->", frame)
         if frame is None:
             time.sleep(0.5)
             continue
@@ -84,7 +111,7 @@ def on_connect():
         # number to construct a reasonable background model, then
         # continue to process the frame
         rect_list = []
-
+        print("total---->", total)
         if total > 0:
             # detect motion in the image
             motion = md.detect(gray)
@@ -142,4 +169,5 @@ def on_connect():
         hello, frame = cv2.imencode('.jpg', frame)
         value = np.array(frame).tobytes()
         image = base64.b64encode(value).decode()
+        print("image---->", image)
         sio.emit(channel_id, image, namespace='/motion')
