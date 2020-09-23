@@ -6,7 +6,7 @@ var socketOut = ioOut.connect('http://localhost:9090/motion');
 
 var nsp = ioIn.of('/my-namespace');
 nsp.on('connection', function(socket) {
-	socketOut.on('id1234', function(msg) {
+	socketOut.on('hi', function(msg) {
     nsp.emit('hi', msg);
 	});
 });

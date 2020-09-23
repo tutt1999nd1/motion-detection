@@ -1,5 +1,5 @@
 import cv2
-
+import os
 
 class WriteImage:
     def __init__(self, file, frame):
@@ -7,4 +7,5 @@ class WriteImage:
         self.frame = frame
 
     def write_image(self):
-        cv2.imwrite('images/' + str(self.file) + '.jpg', self.frame)
+        status = cv2.imwrite('images/' + str(self.file) + '.jpg', self.frame)
+        print(status)

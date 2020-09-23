@@ -8,9 +8,7 @@ import os
 import signal
 
 
-program, environment = sys.argv
-
-r = redis.Redis()
+r = redis.Redis(host = '127.0.0.1', port = 6379)
 r.mset({"Croatia": "Zagreb", "Bahamas": "Nassau"})
 print(r.get("Bahamas"))
 print(r.hgetall("myhash"))
@@ -34,15 +32,15 @@ restaurant_484272 = {
 }
 r.set(484272, json.dumps(restaurant_484272))
 #print(json.loads(r.get(484272)))
-check = json.loads(r.get(484272))
+check = json.loads(r.get('cameras'))
 #print(check["address"]["street"]["line1"])
-print(check["cars"])
+print(check["camera_id"])
 cars = check["cars"]
 for x in cars:
     print(x["model"])
 #hello world
 p = r.pubsub()
-p.subscribe(environment)   
+p.subscribe('cameras')
 while True:
     message = p.get_message()
     if message and not message['data'] == 1:
@@ -59,5 +57,3 @@ while True:
             #time.sleep(20)
             #os.kill(process.pid, signal.SIGINT)
             #print("delete")
-
-
