@@ -1,7 +1,7 @@
 import sys
 if len(sys.argv) == 3:
-    program, environment, action = sys.argv
-    print('enviroment: ',environment)
-    print('action: ',action)
+    program, cam_id, src = sys.argv
+    print('cam_id: ',cam_id)
+    print('src: ',src)
 else:
     print('You must give an environment, and an action!')

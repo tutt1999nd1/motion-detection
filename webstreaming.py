@@ -18,6 +18,7 @@ import decimal
 from util.motion_detection import SingleMotionDetector
 from util.images import WriteImage
 
+
 src = None
 motion_config = None
 channel = None
@@ -53,11 +54,8 @@ if motion_config and json.loads(motion_config[1:].replace('\\','').replace('"x"'
     print("=========================================================================")
     print("motion_config==========>", motion_config['region_value'])
     print("====================================xxxxxxxxxxxxxx=====================================")
-    region_value = ast.literal_eval(motion_config['region_value'])
-    print(region_value)
-
 else:
-    region = "[[{'x':10,'y':10}, {'x':500, 'y':10}, {'x':500, 'y':300}, {'x':10, 'y':300}]]"
+    region = "[[{'x':10,'y':10}, {'x':100, 'y':10}, {'x':100, 'y':100}, {'x':10, 'y':100}]]"
     region_value = ast.literal_eval(region)
 pts = []
 for i in range(len(region_value)):
@@ -116,10 +114,9 @@ def on_connect():
     }
     start_time = ''
     end_time = 0
+
     while True:
         status, frame = cap.read()
-
-
         if frame is None:
             fail_count = fail_count + 1
             time.sleep(0.5)
@@ -147,8 +144,6 @@ def on_connect():
         if total > 0:
                 # detect motion in the image
             motion = md.detect(gray)
-            # t = WriteImage('abc', frame)
-            # t.write_image()
                 # cehck to see if motion was found in the frame
             if motion is not None:
                     # unpack the tuple and draw the box surrounding the
@@ -209,9 +204,68 @@ def on_connect():
             pts2 = np.array(item, np.int32)
                 #pts2 = pts2.reshape((-1, 1, 2))
             frame = cv2.polylines(frame, [pts2], True, (0, 0, 255), 3)
+            rect_list = []
+            if total > 0:
+                # detect motion in the image
+                motion = md.detect(gray)
+                # cehck to see if motion was found in the frame
+                if motion is not None:
+                    # unpack the tuple and draw the box surrounding the
+                    # "motion area" on the output frame
+                    (thresh, rect) = motion
+                    for r in rect:
+                        cv2.rectangle(frame, (r['x'], r['y']), (r['x'] + r['w'], r['y'] + r['h']),
+                                    (0, 0, 255), 2)
+
+                        # item = {
+                        #     "point1": {
+                        #         "x": r['x'],
+                        #         "y": r['y']
+                        #     },
+                        #     "point2": {
+                        #         "x": r['x'] + r['w'],
+                        #         "y": r['y'] + r['h']
+                        #     }
+                        # }
+                        # rect_list.append(item)
+                    # send_data['rect_list'] = rect_list
+                    # # client.publish(str(send_data))
+                    # # producer.producer(str(send_data))
+                    # if start_time == '':
+                    #     start_time = datetime.now()
+                    #
+                    #     file = file + 1
+                    #
+                    #     xml = WriteXml(file)
+                    #     # xml.create_object(minX, minY, maxX, maxY)
+                    #
+                    #     t = WriteImage(file, frame)
+                    #     t.write_image()
+
+                # if start_time != '':
+                #     if motion is None:
+                #         if end_time < 5:
+                #             t = datetime.now() - start_time
+                #             end_time = decimal.Decimal(t.seconds)
+                #         else:
+                #             # client.publish('End time:' + str(datetime.now()))
+                #             end_time = 0
+                #             start_time = ''
+                #     else:
+                #         end_time = 0
+
+            # update the background model and increment the total number
+            # of frames read thus far
+            md.update(gray)
+            total += 1
+            for item in pts:
+                pts2 = np.array(item, np.int32)
+                #pts2 = pts2.reshape((-1, 1, 2))
+                frame = cv2.polylines(frame, [pts2], True, (0,0,255),3)
         hello, frame = cv2.imencode('.jpg', frame)
 
         value = np.array(frame).tobytes()
         image = base64.b64encode(value).decode()
         # print(channel_id)
         sio.emit("hi", image, namespace='/motion')
+        # sio.emit(channel_id, image, namespace='/motion')
