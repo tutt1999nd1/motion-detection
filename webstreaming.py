@@ -114,7 +114,8 @@ def on_connect():
     }
     start_time = ''
     end_time = 0
-
+    time_count = 0
+    time_frame_current = 0
     while True:
         status, frame = cap.read()
         if frame is None:
@@ -149,6 +150,7 @@ def on_connect():
                     # unpack the tuple and draw the box surrounding the
                     # "motion area" on the output frame
                 (thresh, rect) = motion
+                time_frame_current = datetime.now()
                 for r in rect:
                     cv2.rectangle(frame, (r['x'], r['y']), (r['x'] + r['w'], r['y'] + r['h']),
                                 (0, 0, 255), 2)
@@ -167,13 +169,17 @@ def on_connect():
                     client.publish('recording_event_topic', json.dumps(recording_event))
                     # xml = WriteXml(file)
                     # xml.create_object(minX, minY, maxX, maxY)
-
                     end_time = 0
-            else:
-                if start_time != '':
+                    time_count = 0
+            if start_time != '':
+                if motion is not None:
+                    end_time = 0
+                else:
                     if end_time < 5:
-                        t = datetime.now() - start_time
+                        t = datetime.now() - time_frame_current
+                        t_count = datetime.now() - start_time
                         end_time = decimal.Decimal(t.seconds)
+                        time_count = decimal.Decimal(t_count.seconds)
                     else:
                         recording_event['end_time'] = str(datetime.now())
                         recording_event['status'] = 1
@@ -181,6 +187,27 @@ def on_connect():
                         recording_event['end_time'] = ''
                         end_time = 0
                         start_time = ''
+                        time_count = 0
+            if end_time < 5 and time_count > 300:
+                recording_event['end_time'] = str(datetime.now())
+                recording_event['status'] = 1
+                client.publish('recording_event_topic', json.dumps(recording_event))
+                end_time = 0
+                time_count = 0
+                start_time = ''
+
+                start_time = datetime.now()
+                date_time = start_time.strftime("%m/%d/%Y_%H:%M:%S")
+                event_uuid = channel_id + "_" + date_time
+                t = WriteImage(date_time, frame)
+                t.write_image()
+                recording_event['event_uuid'] = event_uuid
+                recording_event['start_time'] = str(start_time)
+                recording_event['status'] = 0
+                recording_event['thumbnail_url'] = '/images/' + event_uuid
+                recording_event['end_time'] = ''
+                client.publish('recording_event_topic', json.dumps(recording_event))
+
 
             # update the background model and increment the total number
             # of frames read thus far

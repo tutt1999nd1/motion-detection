@@ -12,7 +12,7 @@ def connect(sid, environ):
     print("connect ", sid)
 
 
-@sio.on('hi', namespace='/motion')
+@sio.on('my message', namespace='/motion')
 async def message(sid, data):
     # await sio.emit('reply', room=sid)
     await sio.emit('reply', data, namespace='/motion')
