@@ -122,7 +122,6 @@ def on_connect():
     time_frame_xml = ''
     count_1s = 0
     time_start_frame = ''
-    data = ET.Element('data')
     while True:
         status, frame = cap.read()
         if frame is None:
@@ -158,6 +157,7 @@ def on_connect():
                                 (0, 0, 255), 2)
 
                 if start_time == '':
+                    data = ET.Element('data')
                     print("Start time")
                     start_time = datetime.now()
                     date_time = start_time.strftime("%m-%d-%Y_%H:%M:%S")
