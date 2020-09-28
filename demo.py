@@ -56,7 +56,7 @@ if motion_config and json.loads(motion_config[1:].replace('\\','').replace('"x"'
     print("motion_config==========>", motion_config['region_value'])
     print("====================================xxxxxxxxxxxxxx=====================================")
 else:
-    region = "[[{'x':10,'y':10}, {'x':100, 'y':10}, {'x':100, 'y':100}, {'x':10, 'y':100}]]"
+    region = "[[{'x':10,'y':10}, {'x':900, 'y':10}, {'x':900, 'y':500}, {'x':10, 'y':500}]]"
     region_value = ast.literal_eval(region)
 pts = []
 for i in range(len(region_value)):
@@ -145,31 +145,6 @@ def on_connect():
         cv2.putText(frame, time.asctime(time.localtime(time.time())), (10, frame.shape[0] - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
-            # if the total number of frames has reached a sufficient
-            # number to construct a reasonable background model, then
-            # continue to process the frame
-        # rect_list = []
-
-        # Adding a subtag named `Opening`
-        # inside our root tag
-        # event_uuid_1 = ET.SubElement(data, 'event_uuid')
-        # event_uuid_1.text = 'abc'
-        # camera_id_1 = ET.SubElement(data, 'camera_id')
-        # camera_id_1.text = '47222'
-        # channel_id_1 = ET.SubElement(data, 'channel_id')
-        # channel_id_1.text = '222'
-        # motion_list = ET.SubElement(data, 'motion_list')
-        # motion_1 = ET.SubElement(motion_list, 'motion')
-        # motion_1.text = '10:42'
-        # motion_2 = ET.SubElement(motion_list, 'motion')
-        # motion_2.text = '10:43'
-        #
-        # b_xml = ET.tostring(data)
-        #
-        # # Opening a file under the name `items2.xml`,
-        # # with operation mode `wb` (write + binary)
-        # with open("GFG.xml", "wb") as f:
-        #     f.write(b_xml)
         if total > 0:
                 # detect motion in the image
             motion = md.detect(gray)
@@ -205,7 +180,7 @@ def on_connect():
                     channel_id_1 = ET.SubElement(data, 'channel_id')
                     channel_id_1.text = channel_id
                     status_1 = ET.SubElement(data, 'status')
-                    status_1.text = 1
+                    status_1.text = "1"
 
                     # xml = WriteXml(1)
                     # xml.create_object(1, 2, 3, 4)
@@ -248,7 +223,7 @@ def on_connect():
                         b_xml = ET.tostring(data)
                         with open("xml/" + event_uuid + ".xml", "wb") as f:
                             f.write(b_xml)
-            if end_time < 5 and time_count > 300:
+            if end_time < 5 and time_count > 20:
                 print("End time 300s")
                 recording_event['end_time'] = str(datetime.now())
                 recording_event['status'] = 1

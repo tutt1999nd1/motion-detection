@@ -45,8 +45,8 @@ class SingleMotionDetector:
 		(maxX, maxY) = (-np.inf, -np.inf)
 
 		# if no contours were found, return None
-		if len(cnts) == 0:
-			return None
+		# if len(cnts) == 0:
+		# 	return None
 
 		# otherwise, loop over the contours
 		rect = []
@@ -65,12 +65,14 @@ class SingleMotionDetector:
 				polygon = Polygon(pts)
 				if polygon.contains(point):
 					continue
-			rect.append({
-				'x': x,
-				'y': y,
-				'w': w,
-				'h': h
-			})
+				rect.append({
+					'x': x,
+					'y': y,
+					'w': w,
+					'h': h
+				})
+		if len(rect) == 0:
+			return None
 
 		# otherwise, return a tuple of the thresholded image along
 		# with bounding box
