@@ -142,8 +142,6 @@ def on_connect():
         gray = cv2.GaussianBlur(gray, (7, 7), 0)
             # grab the current timestamp and draw it on the frame
             #timestamp = datetime.now()
-        cv2.putText(frame, time.asctime(time.localtime(time.time())), (10, frame.shape[0] - 10),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
         if total > 0:
                 # detect motion in the image
@@ -252,6 +250,8 @@ def on_connect():
             # update the background model and increment the total number
             # of frames read thus far
         md.update(gray)
+        cv2.putText(frame, time.asctime(time.localtime(time.time())), (10, frame.shape[0] - 10),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
         total += 1
         for item in pts:
             pts2 = np.array(item, np.int32)

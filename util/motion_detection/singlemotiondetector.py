@@ -61,9 +61,10 @@ class SingleMotionDetector:
 			mid_point_x = (x + x + w)/2
 			mid_point_y = (y + y + h)/2
 			point = Point(mid_point_x, mid_point_y)
+
 			for pts in self.region:
 				polygon = Polygon(pts)
-				if polygon.contains(point):
+				if polygon.contains(point) == False:
 					continue
 				rect.append({
 					'x': x,
