@@ -248,7 +248,7 @@ def on_connect():
                         b_xml = ET.tostring(data)
                         with open("xml/" + event_uuid + ".xml", "wb") as f:
                             f.write(b_xml)
-            if end_time < 5 and time_count > 20:
+            if end_time < 5 and time_count > 300:
                 print("End time 300s")
                 recording_event['end_time'] = str(datetime.now())
                 recording_event['status'] = 1

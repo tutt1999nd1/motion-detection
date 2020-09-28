@@ -65,7 +65,7 @@ while True:
             print('script running in the targeted machine')
         else :
             print(json.loads(message))
-            cmd = 'python ./motion-detection/webstreaming.py ' + json.loads(message)['channel_id'] + ' ' + json.loads(message)['rtsp']
+            cmd = 'python ./motion-detection/demo.py ' + json.loads(message)['channel_id'] + ' ' + json.loads(message)['rtsp']
             process = subprocess.Popen(cmd)
             print("pid--->",process.pid)
             print("signal--->",signal.SIGINT)
