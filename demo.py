@@ -91,6 +91,7 @@ if motion_config and json.loads(motion_config[1:].replace('\\','').replace('"x"'
     print("=========================================================================")
     print("motion_config==========>", motion_config['region_value'])
     print("====================================xxxxxxxxxxxxxx=====================================")
+    region_value =  ast.literal_eval(motion_config['region_value'])
 else:
     region = "[[{'x':10,'y':10}, {'x':900, 'y':10}, {'x':900, 'y':500}, {'x':10, 'y':500}]]"
     region_value = ast.literal_eval(region)
